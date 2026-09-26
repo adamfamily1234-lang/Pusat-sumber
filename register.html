@@ -98,9 +98,15 @@
     </form>
   </div>
 
-  <script src="app.js"></script>
+  <!-- Supabase Client & Logik Penuh (Standalone dalam register.html) -->
   <script>
-    // FUNGSI COMPRESS TERUS DI DALAM REGISTER.HTML
+    // 1. Konfigurasi Supabase dengan Base URL yang betul
+    const SUPABASE_URL = "https://anjcoojuerbekgassrrf.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFuamNvb2p1ZXJiZWtnYXNzcnJmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA0Mjg2NTEsImV4cCI6MjEwNjAwNDY1MX0.L_X-J-dtUW9z2F0DPoWgwh5h57C0H9jFYuloIYY8BuQ";
+
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    // 2. Fungsi compress gambar
     function compressImage(file) {
       return new Promise((resolve, reject) => {
         const reader = new FileReader();
@@ -140,6 +146,37 @@
       });
     }
 
+    // 3. Fungsi upload gambar ke Supabase Storage
+    async function uploadCoverImage(blobFile) {
+      const fileName = `cover_${Date.now()}_${Math.random().toString(36).substring(2, 7)}.jpg`;
+      const { data, error } = await supabase.storage
+        .from("book-covers")
+        .upload(fileName, blobFile, {
+          contentType: "image/jpeg",
+          upsert: false
+        });
+
+      if (error) throw error;
+
+      const { data: publicUrlData } = supabase.storage
+        .from("book-covers")
+        .getPublicUrl(fileName);
+
+      return publicUrlData.publicUrl;
+    }
+
+    // 4. Fungsi simpan rekod buku ke jadual 'books'
+    async function registerBookRecord(bookData) {
+      const { data, error } = await supabase
+        .from("books")
+        .insert([bookData])
+        .select();
+
+      if (error) throw error;
+      return data;
+    }
+
+    // 5. Pengendali Borang & Kamera
     let selectedImageBlob = null;
 
     const cameraInput = document.getElementById('cameraInput');
@@ -152,7 +189,6 @@
     const submitBtn = document.getElementById('submitBtn');
     const uploadStatus = document.getElementById('uploadStatus');
 
-    // Tangkap gambar & pratonton
     cameraInput.addEventListener('change', async (e) => {
       const file = e.target.files[0];
       if (!file) return;
