@@ -101,8 +101,38 @@
     </div>
   </div>
 
-  <script src="app.js"></script>
+  <!-- Logik Penuh Supabase & Paparan Katalog (Standalone dalam index.html) -->
   <script>
+    // 1. Konfigurasi Supabase dengan Base URL yang betul
+    const SUPABASE_URL = "https://anjcoojuerbekgassrrf.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFuamNvb2p1ZXJiZWtnYXNzcnJmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA0Mjg2NTEsImV4cCI6MjEwNjAwNDY1MX0.L_X-J-dtUW9z2F0DPoWgwh5h57C0H9jFYuloIYY8BuQ";
+
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    // 2. Fungsi ambil senarai buku dari Supabase
+    async function fetchBooks() {
+      const { data, error } = await supabase
+        .from("books")
+        .select("*")
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+      return data || [];
+    }
+
+    // 3. Fungsi kemas kini status pinjaman buku
+    async function updateBookStatus(bookId, newStatus) {
+      const { data, error } = await supabase
+        .from("books")
+        .update({ status: newStatus })
+        .eq("id", bookId)
+        .select();
+
+      if (error) throw error;
+      return data;
+    }
+
+    // 4. Logik UI & Render Katalog
     let allBooks = [];
     let selectedBook = null;
 
@@ -204,7 +234,7 @@
 
     async function handleBorrowBook() {
       if (!selectedBook) return;
-      if (!confirm(`Sahkan untuk membuat rekod pinjaman bagi: "${selectedBook.title}"?`)) return;
+      if (!confirm(`Sahkan untuk mengubah status pinjaman bagi: "${selectedBook.title}"?`)) return;
 
       try {
         const nextStatus = selectedBook.status === 'Available' ? 'Borrowed' : 'Available';
