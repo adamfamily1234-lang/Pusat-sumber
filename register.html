@@ -5,15 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Pusat Sumber - Daftar Buku Baharu</title>
   <link rel="manifest" href="manifest.json">
-  <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Supabase JS Client -->
   <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 </head>
 <body class="bg-slate-50 text-slate-800 min-h-screen py-6 px-4">
   <div class="max-w-md mx-auto bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
     
-    <!-- Header -->
     <div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
       <div class="flex items-center space-x-2">
         <a href="index.html" class="p-1.5 text-slate-500 hover:text-slate-800 rounded-lg hover:bg-slate-100 transition">
@@ -23,41 +20,32 @@
       </div>
     </div>
 
-    <!-- Borang -->
     <form id="bookForm" class="p-5 space-y-4">
       
-      <!-- Input Kamera & Pratonton Gambar -->
+      <!-- Input Kamera & Pratonton -->
       <div>
         <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">Gambar Kulit Buku</label>
-        
-        <!-- Input khas untuk BUKA KAMERA TERUS -->
         <input type="file" id="cameraDirectInput" accept="image/*" capture="environment" class="hidden">
-        
-        <!-- Input khas untuk BUKA GALERI / FAIL -->
         <input type="file" id="galleryInput" accept="image/*" class="hidden">
         
-        <!-- Pilihan 2 Butang: Snap Kamera atau Galeri -->
         <div id="cameraPlaceholder" class="grid grid-cols-2 gap-3">
-          <!-- Butang Kamera -->
           <button type="button" onclick="document.getElementById('cameraDirectInput').click()" class="border-2 border-dashed border-blue-300 hover:border-blue-500 bg-blue-50/50 hover:bg-blue-100/50 rounded-xl p-4 text-center cursor-pointer transition flex flex-col items-center justify-center space-y-2">
             <div class="bg-blue-600 text-white p-2.5 rounded-full shadow-sm">
               <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
             </div>
             <span class="text-xs font-bold text-blue-900 leading-tight">Snap Guna Kamera</span>
-            <span class="text-[10px] text-blue-600">Buka kamera belakang</span>
+            <span class="text-[10px] text-blue-600">Kamera Telefon</span>
           </button>
 
-          <!-- Butang Galeri -->
           <button type="button" onclick="document.getElementById('galleryInput').click()" class="border-2 border-dashed border-slate-300 hover:border-slate-400 bg-slate-50 hover:bg-slate-100/70 rounded-xl p-4 text-center cursor-pointer transition flex flex-col items-center justify-center space-y-2">
             <div class="bg-slate-700 text-white p-2.5 rounded-full shadow-sm">
               <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
             </div>
             <span class="text-xs font-bold text-slate-800 leading-tight">Pilih Dari Galeri</span>
-            <span class="text-[10px] text-slate-500">Album / Fail telefon</span>
+            <span class="text-[10px] text-slate-500">Fail / Gambar</span>
           </button>
         </div>
 
-        <!-- Pratonton jika gambar dipilih -->
         <div id="imagePreviewContainer" class="relative rounded-xl overflow-hidden border border-slate-200 hidden mt-2">
           <img id="imagePreview" src="" alt="Pratonton" class="w-full h-64 object-contain bg-slate-900">
           <button type="button" onclick="resetImageSelection()" class="absolute top-2 right-2 bg-red-600 hover:bg-red-700 text-white p-1.5 rounded-full shadow transition">
@@ -66,51 +54,56 @@
         </div>
       </div>
 
-      <!-- Maklumat Buku -->
+      <!-- Kategori & Kod Buku Auto -->
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label for="bookCategory" class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Kategori *</label>
+          <select id="bookCategory" onchange="generateNextBookCode()" class="w-full px-3 py-2.5 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+            <option value="Garis Panduan" data-prefix="GP">Garis Panduan (GP)</option>
+            <option value="Jurnal" data-prefix="J">Jurnal (J)</option>
+            <option value="Manual & Standard" data-prefix="MS">Manual & Standard (MS)</option>
+            <option value="Buku Teknikal" data-prefix="BT">Buku Teknikal (BT)</option>
+            <option value="Laporan Projek" data-prefix="LP">Laporan Projek (LP)</option>
+            <option value="Umum" data-prefix="U">Umum (U)</option>
+          </select>
+        </div>
+
+        <div>
+          <label for="bookCode" class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Kod Buku (Auto) *</label>
+          <input type="text" id="bookCode" required placeholder="Cth: GP-001" class="w-full px-3 py-2.5 rounded-xl border border-blue-300 bg-blue-50/50 font-mono font-bold text-blue-900 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+        </div>
+      </div>
+
+      <!-- Tajuk & Pengarang -->
       <div>
         <label for="bookTitle" class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Tajuk Buku *</label>
-        <input type="text" id="bookTitle" required placeholder="Contoh: Kejuruteraan Bangunan Moden" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+        <input type="text" id="bookTitle" required placeholder="Contoh: Garis Panduan Rekabentuk Mekanikal" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
       </div>
 
       <div>
-        <label for="bookAuthor" class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Nama Pengarang</label>
-        <input type="text" id="bookAuthor" placeholder="Nama penulis / penerbit" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+        <label for="bookAuthor" class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Nama Pengarang / Cawangan</label>
+        <input type="text" id="bookAuthor" placeholder="Contoh: Cawangan Kejuruteraan Mekanikal" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
       </div>
 
-      <div>
-        <label for="bookCategory" class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Kategori</label>
-        <select id="bookCategory" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
-          <option value="Teknikal & Kejuruteraan">Teknikal & Kejuruteraan</option>
-          <option value="Sains & Teknologi">Sains & Teknologi</option>
-          <option value="Pengurusan & Pentadbiran">Pengurusan & Pentadbiran</option>
-          <option value="Rujukan & Manual">Rujukan & Manual</option>
-          <option value="Umum">Umum</option>
-        </select>
-      </div>
-
-      <!-- Pilihan Format (Fizikal / E-Book) -->
-      <div class="pt-2">
+      <!-- E-Book Checkbox -->
+      <div class="pt-1">
         <label class="flex items-center space-x-2.5 cursor-pointer">
           <input type="checkbox" id="isEbook" class="w-4 h-4 text-blue-600 rounded focus:ring-blue-500">
           <span class="text-sm font-semibold text-slate-700">Buku Ini Adalah E-Book (Digital)</span>
         </label>
       </div>
 
-      <!-- Medan Pautan Google Drive (Muncul bila tick e-book) -->
       <div id="driveLinkSection" class="hidden">
         <label for="driveUrl" class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Pautan Google Drive (E-Book PDF)</label>
         <input type="url" id="driveUrl" placeholder="https://drive.google.com/file/d/.../view" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-        <span class="text-[11px] text-slate-400 mt-1 block">Pastikan akses fail Google Drive diset kepada "Anyone with the link can view".</span>
       </div>
 
-      <!-- Butang Hantar -->
       <button type="submit" id="submitBtn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-xl transition text-sm flex items-center justify-center space-x-2 shadow">
         <span>Simpan & Daftarkan Buku</span>
       </button>
 
-      <!-- Status Memuat Naik -->
       <div id="uploadStatus" class="hidden text-center text-xs text-blue-600 font-medium py-1 animate-pulse">
-        Sedang memampatkan gambar dan memuat naik rekod...
+        Sedang memproses maklumat...
       </div>
     </form>
   </div>
@@ -128,12 +121,41 @@
       return supabaseClient;
     }
 
-    // Fungsi mampatan selamat (support kamera resolusi tinggi telefon moden)
+    // Fungsi Kira Kod Buku Mengikut Bilangan Kategori
+    async function generateNextBookCode() {
+      try {
+        const client = getSupabase();
+        const selectEl = document.getElementById('bookCategory');
+        const selectedOpt = selectEl.options[selectEl.selectedIndex];
+        const prefix = selectedOpt.getAttribute('data-prefix') || 'B';
+
+        // Ambil semua buku yang bermula dengan prefix ini
+        const { data, error } = await client
+          .from("books")
+          .select("book_code")
+          .like("book_code", `${prefix}-%`);
+
+        let nextNum = 1;
+        if (data && data.length > 0) {
+          const numbers = data.map(item => {
+            const parts = (item.book_code || "").split('-');
+            const val = parseInt(parts[1], 10);
+            return isNaN(val) ? 0 : val;
+          });
+          nextNum = Math.max(...numbers) + 1;
+        }
+
+        const paddedNum = String(nextNum).padStart(3, '0');
+        document.getElementById('bookCode').value = `${prefix}-${paddedNum}`;
+      } catch (e) {
+        console.error("Gagal auto-generate kod buku:", e);
+      }
+    }
+
     async function compressImageSafely(file) {
       return new Promise((resolve, reject) => {
         const img = new Image();
         const objectUrl = URL.createObjectURL(file);
-        
         img.onload = () => {
           URL.revokeObjectURL(objectUrl);
           const canvas = document.createElement("canvas");
@@ -151,22 +173,12 @@
 
           const ctx = canvas.getContext("2d");
           ctx.drawImage(img, 0, 0, width, height);
-
-          canvas.toBlob(
-            (blob) => {
-              if (blob) resolve(blob);
-              else reject(new Error("Gagal memampatkan imej"));
-            },
-            "image/jpeg",
-            0.75
-          );
+          canvas.toBlob((blob) => resolve(blob), "image/jpeg", 0.75);
         };
-
         img.onerror = () => {
           URL.revokeObjectURL(objectUrl);
           reject(new Error("Pelayar tidak dapat membaca fail imej ini."));
         };
-
         img.src = objectUrl;
       });
     }
@@ -174,35 +186,15 @@
     async function uploadCoverImage(blobFile) {
       const client = getSupabase();
       const fileName = `cover_${Date.now()}_${Math.random().toString(36).substring(2, 7)}.jpg`;
-      
       const { data, error } = await client.storage
         .from("book-covers")
-        .upload(fileName, blobFile, {
-          contentType: "image/jpeg",
-          upsert: false
-        });
+        .upload(fileName, blobFile, { contentType: "image/jpeg", upsert: false });
 
       if (error) throw error;
-
-      const { data: publicUrlData } = client.storage
-        .from("book-covers")
-        .getPublicUrl(fileName);
-
+      const { data: publicUrlData } = client.storage.from("book-covers").getPublicUrl(fileName);
       return publicUrlData.publicUrl;
     }
 
-    async function registerBookRecord(bookData) {
-      const client = getSupabase();
-      const { data, error } = await client
-        .from("books")
-        .insert([bookData])
-        .select();
-
-      if (error) throw error;
-      return data;
-    }
-
-    // Elemen DOM
     let selectedImageBlob = null;
     const cameraDirectInput = document.getElementById('cameraDirectInput');
     const galleryInput = document.getElementById('galleryInput');
@@ -215,15 +207,12 @@
     const submitBtn = document.getElementById('submitBtn');
     const uploadStatus = document.getElementById('uploadStatus');
 
-    // Fungsi proses fail gambar (dikongsi antara kamera dan galeri)
     async function handleFileProcess(file) {
       if (!file) return;
       try {
-        uploadStatus.innerText = "Memproses & memampatkan saiz gambar...";
+        uploadStatus.innerText = "Memproses saiz gambar...";
         uploadStatus.classList.remove('hidden');
-
         selectedImageBlob = await compressImageSafely(file);
-
         imagePreview.src = URL.createObjectURL(selectedImageBlob);
         cameraPlaceholder.classList.add('hidden');
         imagePreviewContainer.classList.remove('hidden');
@@ -236,15 +225,10 @@
     }
 
     cameraDirectInput.addEventListener('change', (e) => {
-      if (e.target.files && e.target.files[0]) {
-        handleFileProcess(e.target.files[0]);
-      }
+      if (e.target.files && e.target.files[0]) handleFileProcess(e.target.files[0]);
     });
-
     galleryInput.addEventListener('change', (e) => {
-      if (e.target.files && e.target.files[0]) {
-        handleFileProcess(e.target.files[0]);
-      }
+      if (e.target.files && e.target.files[0]) handleFileProcess(e.target.files[0]);
     });
 
     function resetImageSelection() {
@@ -257,42 +241,36 @@
     }
 
     isEbookCheckbox.addEventListener('change', (e) => {
-      if (e.target.checked) {
-        driveLinkSection.classList.remove('hidden');
-      } else {
+      if (e.target.checked) driveLinkSection.classList.remove('hidden');
+      else {
         driveLinkSection.classList.add('hidden');
         document.getElementById('driveUrl').value = '';
       }
     });
 
-    // Simpan borang
     bookForm.addEventListener('submit', async (e) => {
       e.preventDefault();
-
       const title = document.getElementById('bookTitle').value.trim();
+      const bookCode = document.getElementById('bookCode').value.trim();
       const author = document.getElementById('bookAuthor').value.trim();
       const category = document.getElementById('bookCategory').value;
       const isEbook = isEbookCheckbox.checked;
       const ebookDriveUrl = document.getElementById('driveUrl').value.trim();
 
-      if (!title) {
-        alert("Sila masukkan tajuk buku.");
-        return;
-      }
-
       try {
         submitBtn.disabled = true;
         submitBtn.classList.add('opacity-50', 'cursor-not-allowed');
-        uploadStatus.innerText = "Sedang memuat naik ke pangkalan data...";
+        uploadStatus.innerText = "Sedang memuat naik maklumat buku...";
         uploadStatus.classList.remove('hidden');
 
         let coverUrl = null;
         if (selectedImageBlob) {
-          uploadStatus.innerText = "Sedang memuat naik gambar kulit buku...";
           coverUrl = await uploadCoverImage(selectedImageBlob);
         }
 
-        const newBook = {
+        const client = getSupabase();
+        const { error } = await client.from("books").insert([{
+          book_code: bookCode,
           title: title,
           author: author || null,
           category: category,
@@ -300,20 +278,23 @@
           ebook_drive_url: isEbook ? ebookDriveUrl : null,
           cover_url: coverUrl,
           status: 'Available'
-        };
+        }]);
 
-        uploadStatus.innerText = "Menyimpan data buku...";
-        await registerBookRecord(newBook);
+        if (error) throw error;
 
-        alert("Buku berjaya didaftarkan!");
+        alert(`Buku dengan Kod [${bookCode}] berjaya didaftarkan!`);
         window.location.href = "index.html";
       } catch (err) {
-        alert("Ralat semasa mendaftar: " + (err.message || err));
+        alert("Ralat pendaftaran: " + (err.message || err));
       } finally {
         submitBtn.disabled = false;
         submitBtn.classList.remove('opacity-50', 'cursor-not-allowed');
         uploadStatus.classList.add('hidden');
       }
+    });
+
+    window.addEventListener('DOMContentLoaded', () => {
+      setTimeout(generateNextBookCode, 400);
     });
   </script>
 </body>
