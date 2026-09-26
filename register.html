@@ -30,20 +30,36 @@
       <div>
         <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">Gambar Kulit Buku</label>
         
-        <!-- Input fail tanpa sekatan 'capture' tegar supaya lancar di Android & iOS -->
-        <input type="file" id="cameraInput" accept="image/*" class="hidden">
+        <!-- Input khas untuk BUKA KAMERA TERUS -->
+        <input type="file" id="cameraDirectInput" accept="image/*" capture="environment" class="hidden">
         
-        <div id="cameraPlaceholder" onclick="triggerCamera()" class="border-2 border-dashed border-slate-300 hover:border-blue-500 bg-slate-50 hover:bg-blue-50/40 rounded-xl p-6 text-center cursor-pointer transition flex flex-col items-center justify-center space-y-2">
-          <div class="bg-white p-3 rounded-full shadow-sm text-blue-600">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-          </div>
-          <span class="text-sm font-medium text-slate-700">Tekan untuk Snap Kamera / Pilih Gambar</span>
-          <span class="text-xs text-slate-400">Gambar akan dimampatkan secara automatik (&lt; 150KB)</span>
+        <!-- Input khas untuk BUKA GALERI / FAIL -->
+        <input type="file" id="galleryInput" accept="image/*" class="hidden">
+        
+        <!-- Pilihan 2 Butang: Snap Kamera atau Galeri -->
+        <div id="cameraPlaceholder" class="grid grid-cols-2 gap-3">
+          <!-- Butang Kamera -->
+          <button type="button" onclick="document.getElementById('cameraDirectInput').click()" class="border-2 border-dashed border-blue-300 hover:border-blue-500 bg-blue-50/50 hover:bg-blue-100/50 rounded-xl p-4 text-center cursor-pointer transition flex flex-col items-center justify-center space-y-2">
+            <div class="bg-blue-600 text-white p-2.5 rounded-full shadow-sm">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+            </div>
+            <span class="text-xs font-bold text-blue-900 leading-tight">Snap Guna Kamera</span>
+            <span class="text-[10px] text-blue-600">Buka kamera belakang</span>
+          </button>
+
+          <!-- Butang Galeri -->
+          <button type="button" onclick="document.getElementById('galleryInput').click()" class="border-2 border-dashed border-slate-300 hover:border-slate-400 bg-slate-50 hover:bg-slate-100/70 rounded-xl p-4 text-center cursor-pointer transition flex flex-col items-center justify-center space-y-2">
+            <div class="bg-slate-700 text-white p-2.5 rounded-full shadow-sm">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+            </div>
+            <span class="text-xs font-bold text-slate-800 leading-tight">Pilih Dari Galeri</span>
+            <span class="text-[10px] text-slate-500">Album / Fail telefon</span>
+          </button>
         </div>
 
         <!-- Pratonton jika gambar dipilih -->
-        <div id="imagePreviewContainer" class="relative rounded-xl overflow-hidden border border-slate-200 hidden">
-          <img id="imagePreview" src="" alt="Pratonton" class="w-full h-56 object-contain bg-slate-900">
+        <div id="imagePreviewContainer" class="relative rounded-xl overflow-hidden border border-slate-200 hidden mt-2">
+          <img id="imagePreview" src="" alt="Pratonton" class="w-full h-64 object-contain bg-slate-900">
           <button type="button" onclick="resetImageSelection()" class="absolute top-2 right-2 bg-red-600 hover:bg-red-700 text-white p-1.5 rounded-full shadow transition">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
           </button>
@@ -188,7 +204,8 @@
 
     // Elemen DOM
     let selectedImageBlob = null;
-    const cameraInput = document.getElementById('cameraInput');
+    const cameraDirectInput = document.getElementById('cameraDirectInput');
+    const galleryInput = document.getElementById('galleryInput');
     const cameraPlaceholder = document.getElementById('cameraPlaceholder');
     const imagePreviewContainer = document.getElementById('imagePreviewContainer');
     const imagePreview = document.getElementById('imagePreview');
@@ -198,24 +215,15 @@
     const submitBtn = document.getElementById('submitBtn');
     const uploadStatus = document.getElementById('uploadStatus');
 
-    function triggerCamera() {
-      cameraInput.click();
-    }
-
-    // Apabila pengguna selesai snap gambar / pilih imej
-    cameraInput.addEventListener('change', async (e) => {
-      const files = e.target.files;
-      if (!files || files.length === 0) return;
-
-      const file = files[0];
+    // Fungsi proses fail gambar (dikongsi antara kamera dan galeri)
+    async function handleFileProcess(file) {
+      if (!file) return;
       try {
-        uploadStatus.innerText = "Memproses dan mengecilkan saiz gambar...";
+        uploadStatus.innerText = "Memproses & memampatkan saiz gambar...";
         uploadStatus.classList.remove('hidden');
 
-        // Mampatkan imej
         selectedImageBlob = await compressImageSafely(file);
 
-        // Paparkan pratonton
         imagePreview.src = URL.createObjectURL(selectedImageBlob);
         cameraPlaceholder.classList.add('hidden');
         imagePreviewContainer.classList.remove('hidden');
@@ -225,11 +233,24 @@
       } finally {
         uploadStatus.classList.add('hidden');
       }
+    }
+
+    cameraDirectInput.addEventListener('change', (e) => {
+      if (e.target.files && e.target.files[0]) {
+        handleFileProcess(e.target.files[0]);
+      }
+    });
+
+    galleryInput.addEventListener('change', (e) => {
+      if (e.target.files && e.target.files[0]) {
+        handleFileProcess(e.target.files[0]);
+      }
     });
 
     function resetImageSelection() {
       selectedImageBlob = null;
-      cameraInput.value = "";
+      cameraDirectInput.value = "";
+      galleryInput.value = "";
       imagePreview.src = "";
       imagePreviewContainer.classList.add('hidden');
       cameraPlaceholder.classList.remove('hidden');
