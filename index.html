@@ -7,8 +7,8 @@
   <link rel="manifest" href="manifest.json">
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Supabase JS Client -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <!-- Supabase JS Client (Versi Stabil) -->
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 </head>
 <body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
 
@@ -49,6 +49,12 @@
     <div id="loadingIndicator" class="flex flex-col items-center justify-center py-20 text-slate-400">
       <svg class="animate-spin h-8 w-8 text-blue-600 mb-2" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path></svg>
       <span class="text-sm">Memuatkan katalog buku...</span>
+    </div>
+
+    <!-- Paparan Ralat Sekiranya Gagal -->
+    <div id="errorMessage" class="hidden text-center py-10 px-4 bg-red-50 rounded-xl border border-red-200 mb-6">
+      <p class="text-red-700 text-sm font-semibold mb-2" id="errorText"></p>
+      <button onclick="location.reload()" class="px-4 py-1.5 bg-red-600 text-white rounded-lg text-xs font-semibold hover:bg-red-700">Cuba Semula</button>
     </div>
 
     <!-- Grid Katalog Buku -->
@@ -101,17 +107,27 @@
     </div>
   </div>
 
-  <!-- Logik Penuh Supabase & Paparan Katalog (Standalone dalam index.html) -->
   <script>
-    // 1. Konfigurasi Supabase dengan Base URL yang betul
     const SUPABASE_URL = "https://anjcoojuerbekgassrrf.supabase.co";
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFuamNvb2p1ZXJiZWtnYXNzcnJmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA0Mjg2NTEsImV4cCI6MjEwNjAwNDY1MX0.L_X-J-dtUW9z2F0DPoWgwh5h57C0H9jFYuloIYY8BuQ";
 
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    let supabaseClient = null;
+    let allBooks = [];
+    let selectedBook = null;
 
-    // 2. Fungsi ambil senarai buku dari Supabase
+    function getSupabase() {
+      if (!supabaseClient) {
+        if (!window.supabase) {
+          throw new Error("Library Supabase belum siap dimuat turun. Sila periksa capaian internet anda.");
+        }
+        supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+      }
+      return supabaseClient;
+    }
+
     async function fetchBooks() {
-      const { data, error } = await supabase
+      const client = getSupabase();
+      const { data, error } = await client
         .from("books")
         .select("*")
         .order("created_at", { ascending: false });
@@ -120,9 +136,9 @@
       return data || [];
     }
 
-    // 3. Fungsi kemas kini status pinjaman buku
     async function updateBookStatus(bookId, newStatus) {
-      const { data, error } = await supabase
+      const client = getSupabase();
+      const { data, error } = await client
         .from("books")
         .update({ status: newStatus })
         .eq("id", bookId)
@@ -132,18 +148,19 @@
       return data;
     }
 
-    // 4. Logik UI & Render Katalog
-    let allBooks = [];
-    let selectedBook = null;
-
     async function loadCatalog() {
+      const loadingEl = document.getElementById('loadingIndicator');
+      const errorEl = document.getElementById('errorMessage');
+      const errorText = document.getElementById('errorText');
+
       try {
         allBooks = await fetchBooks();
-        document.getElementById('loadingIndicator').classList.add('hidden');
+        loadingEl.classList.add('hidden');
         renderBooks(allBooks);
       } catch (err) {
-        alert("Gagal memuatkan rekod buku: " + err.message);
-        document.getElementById('loadingIndicator').classList.add('hidden');
+        loadingEl.classList.add('hidden');
+        errorText.innerText = "Gagal memuatkan rekod buku: " + (err.message || err);
+        errorEl.classList.remove('hidden');
       }
     }
 
@@ -247,7 +264,6 @@
       }
     }
 
-    // Filter & Carian
     document.getElementById('searchInput').addEventListener('input', applyFilters);
     document.getElementById('filterType').addEventListener('change', applyFilters);
 
@@ -270,18 +286,10 @@
       renderBooks(filtered);
     }
 
-    window.addEventListener('DOMContentLoaded', loadCatalog);
-  </script>
-
-<script>
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('/sw.js')
-        .then((reg) => console.log('Service Worker berdaftar:', reg.scope))
-        .catch((err) => console.error('Pendaftaran Service Worker gagal:', err));
+    window.addEventListener('DOMContentLoaded', () => {
+      // Tunggu sebentar untuk pastikan script CDN sedia sebelum panggil data
+      setTimeout(loadCatalog, 300);
     });
-  }
-</script>
-
+  </script>
 </body>
 </html>
