@@ -1,5 +1,5 @@
 // Gantikan dengan maklumat dari Dashboard Supabase anda (Project Settings -> API)
-const SUPABASE_URL = "https://anjcoojuerbekgassrrf.supabase.co/rest/v1/";
+const SUPABASE_URL = "https://anjcoojuerbekgassrrf.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFuamNvb2p1ZXJiZWtnYXNzcnJmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA0Mjg2NTEsImV4cCI6MjEwNjAwNDY1MX0.L_X-J-dtUW9z2F0DPoWgwh5h57C0H9jFYuloIYY8BuQ";
 
 const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
