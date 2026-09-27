@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pusat Sumber - Pengurusan Kelulusan Pinjaman</title>
+  <link rel="manifest" href="manifest.json">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
+
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <a href="index.html" class="p-2 text-slate-500 hover:text-slate-800 rounded-lg hover:bg-slate-100 transition">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+        </a>
+        <div>
+          <h1 class="text-lg font-bold text-slate-900 leading-tight">Pengurusan Pinjaman Buku (Admin)</h1>
+          <p class="text-xs text-slate-500">Kelulusan Permohonan & Rekod Pemulangan</p>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-5xl mx-auto px-4 py-6 w-full flex-1">
+    <div id="loadingIndicator" class="text-center py-12 text-slate-400">
+      Memuatkan senarai permohonan...
+    </div>
+
+    <div id="loansList" class="space-y-4 hidden"></div>
+
+    <div id="emptyLoans" class="hidden text-center py-16 text-slate-500 text-sm">
+      Tiada rekod permohonan pinjaman yang menunggu kelulusan.
+    </div>
+  </main>
+
+  <script>
+    const SUPABASE_URL = "https://anjcoojuerbekgassrrf.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFuamNvb2p1ZXJiZWtnYXNzcnJmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA0Mjg2NTEsImV4cCI6MjEwNjAwNDY1MX0.L_X-J-dtUW9z2F0DPoWgwh5h57C0H9jFYuloIYY8BuQ";
+
+    let supabaseClient = null;
+    function getSupabase() {
+      if (!supabaseClient) supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+      return supabaseClient;
+    }
+
+    // Pastikan hanya ADMIN boleh buka halaman ini
+    const currentUser = JSON.parse(localStorage.getItem('currentUser') || 'null');
+    if (!currentUser || currentUser.role !== 'admin') {
+      alert("Akses Terhad: Halaman ini hanya boleh diakses oleh Pentadbir Perpustakaan.");
+      window.location.href = "login.html";
+    }
+
+    async function loadLoans() {
+      const client = getSupabase();
+      const loadingEl = document.getElementById('loadingIndicator');
+      const listEl = document.getElementById('loansList');
+      const emptyEl = document.getElementById('emptyLoans');
+
+      try {
+        const { data, error } = await client
+          .from('loans')
+          .select(`
+            id, status, borrow_date, return_date,
+            books (id, book_code, title, cover_url),
+            users (id, full_name, ic_number, phone_number, position)
+          `)
+          .order('id', { ascending: false });
+
+        if (error) throw error;
+
+        loadingEl.classList.add('hidden');
+        listEl.innerHTML = '';
+
+        if (!data || data.length === 0) {
+          emptyEl.classList.remove('hidden');
+          return;
+        }
+
+        emptyEl.classList.add('hidden');
+        listEl.classList.remove('hidden');
+
+        data.forEach(loan => {
+          const card = document.createElement('div');
+          card.className = "bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-4";
+
+          const statusBadge = loan.status === 'Pending' 
+            ? '<span class="px-2.5 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800">Menunggu Kelulusan</span>'
+            : (loan.status === 'Approved' 
+                ? '<span class="px-2.5 py-1 rounded-full text-xs font-bold bg-green-100 text-green-800">Sedang Dipinjam</span>' 
+                : '<span class="px-2.5 py-1 rounded-full text-xs font-bold bg-slate-100 text-slate-600">Telah Dipulangkan</span>');
+
+          card.innerHTML = `
+            <div class="flex items-center space-x-3">
+              <img src="${loan.books?.cover_url || 'https://placehold.co/100x140?text=Buku'}" class="w-14 h-20 object-cover rounded-lg bg-slate-100 border">
+              <div>
+                <div class="flex items-center space-x-2">
+                  <span class="text-xs font-mono font-bold text-blue-700 bg-blue-50 px-2 py-0.5 rounded">${loan.books?.book_code || '-'}</span>
+                  ${statusBadge}
+                </div>
+                <h3 class="font-bold text-slate-900 text-sm mt-1">${loan.books?.title || 'Buku Tidak Diketahui'}</h3>
+                <p class="text-xs text-slate-500 mt-1">
+                  <strong>Peminjam:</strong> ${loan.users?.full_name} (${loan.users?.position})<br>
+                  <strong>No. IC:</strong> ${loan.users?.ic_number} | <strong>Tel:</strong> ${loan.users?.phone_number}
+                </p>
+                <p class="text-[11px] text-slate-400 mt-1">Tarikh Permohonan: ${loan.borrow_date}</p>
+              </div>
+            </div>
+
+            <div class="flex items-center space-x-2 w-full md:w-auto justify-end border-t md:border-t-0 pt-3 md:pt-0">
+              ${loan.status === 'Pending' ? `
+                <button onclick="updateLoanStatus(${loan.id},${loan.books.id}, 'Approved')" class="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-lg transition shadow">
+                  Luluskan Pinjaman
+                </button>
+                <button onclick="rejectLoan(${loan.id},${loan.books.id})" class="px-3.5 py-2 bg-red-100 hover:bg-red-200 text-red-700 text-xs font-bold rounded-lg transition">
+                  Tolak
+                </button>
+              ` : ''}
+
+              ${loan.status === 'Approved' ? `
+                <button onclick="returnBook(${loan.id},${loan.books.id})" class="px-3.5 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-lg transition shadow">
+                  Tanda Telah Dipulangkan
+                </button>
+              ` : ''}
+            </div>
+          `;
+          listEl.appendChild(card);
+        });
+
+      } catch (err) {
+        alert("Ralat memuatkan rekod: " + err.message);
+      }
+    }
+
+    // Luluskan Permohonan
+    async function updateLoanStatus(loanId, bookId, newStatus) {
+      if (!confirm("Sahkan untuk meluluskan permohonan pinjaman ini?")) return;
+      try {
+        const client = getSupabase();
+        // 1. Kemaskini status loan
+        await client.from('loans').update({ status: newStatus }).eq('id', loanId);
+        // 2. Kemaskini status buku kepada 'Borrowed'
+        await client.from('books').update({ status: 'Borrowed' }).eq('id', bookId);
+
+        alert("Pinjaman telah diluluskan!");
+        loadLoans();
+      } catch (e) {
+        alert("Ralat: " + e.message);
+      }
+    }
+
+    // Tolak Permohonan
+    async function rejectLoan(loanId, bookId) {
+      if (!confirm("Tolak permohonan pinjaman ini?")) return;
+      try {
+        const client = getSupabase();
+        await client.from('loans').update({ status: 'Rejected' }).eq('id', loanId);
+        await client.from('books').update({ status: 'Available' }).eq('id', bookId);
+        alert("Permohonan telah ditolak.");
+        loadLoans();
+      } catch (e) {
+        alert("Ralat: " + e.message);
+      }
+    }
+
+    // Proses Pemulangan Buku
+    async function returnBook(loanId, bookId) {
+      if (!confirm("Sahkan buku ini telah selamat dipulangkan ke perpustakaan?")) return;
+      try {
+        const client = getSupabase();
+        await client.from('loans').update({ status: 'Returned', return_date: new Date().toISOString() }).eq('id', loanId);
+        await client.from('books').update({ status: 'Available' }).eq('id', bookId);
+        alert("Buku telah ditandakan sebagai dipulangkan dan kini tersedia semula di rak!");
+        loadLoans();
+      } catch (e) {
+        alert("Ralat: " + e.message);
+      }
+    }
+
+    window.addEventListener('DOMContentLoaded', loadLoans);
+  </script>
+</body>
+</html>

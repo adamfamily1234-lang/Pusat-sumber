@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pusat Sumber - Log Masuk / Daftar Pengguna</title>
+  <link rel="manifest" href="manifest.json">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+</head>
+<body class="bg-slate-100 min-h-screen flex items-center justify-center p-4">
+
+  <div class="bg-white w-full max-w-md rounded-2xl shadow-xl border border-slate-200 overflow-hidden">
+    <!-- Header -->
+    <div class="bg-blue-600 p-6 text-center text-white">
+      <div class="inline-flex p-3 bg-white/10 rounded-2xl mb-2 backdrop-blur-sm">
+        <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
+      </div>
+      <h1 class="text-xl font-bold">Pusat Sumber</h1>
+      <p class="text-xs text-blue-100">Sistem Pengurusan & Pinjaman Buku</p>
+    </div>
+
+    <!-- Tab Pilihan (Log Masuk / Daftar) -->
+    <div class="flex border-b border-slate-200 bg-slate-50 text-sm font-semibold">
+      <button id="tabLogin" onclick="switchTab('login')" class="flex-1 py-3 text-center border-b-2 border-blue-600 text-blue-600 bg-white">Log Masuk</button>
+      <button id="tabRegister" onclick="switchTab('register')" class="flex-1 py-3 text-center border-b-2 border-transparent text-slate-500 hover:text-slate-800">Daftar Pengguna</button>
+    </div>
+
+    <div class="p-6">
+      <!-- 1. Borang Log Masuk -->
+      <form id="loginForm" onsubmit="handleLogin(event)" class="space-y-4">
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Nombor Kad Pengenalan (IC) / ID Admin</label>
+          <input type="text" id="loginIc" required placeholder="Contoh: 900101015555 atau admin" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Nombor Telefon</label>
+          <input type="tel" id="loginPhone" required placeholder="Contoh: 0123456789" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+        </div>
+        <button type="submit" id="loginBtn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-xl transition text-sm shadow">
+          Log Masuk
+        </button>
+      </form>
+
+      <!-- 2. Borang Daftar Pengguna Baru -->
+      <form id="registerForm" onsubmit="handleRegister(event)" class="space-y-3 hidden">
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Nama Penuh *</label>
+          <input type="text" id="regName" required placeholder="Nama seperti dalam kad pengenalan" class="w-full px-3.5 py-2 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Nombor Kad Pengenalan (IC) *</label>
+          <input type="text" id="regIc" required placeholder="Cth: 920512105555 (tanpa tanda sempang)" class="w-full px-3.5 py-2 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Nombor Telefon Bimbit *</label>
+          <input type="tel" id="regPhone" required placeholder="Cth: 0134567890" class="w-full px-3.5 py-2 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Jawatan / Bahagian *</label>
+          <input type="text" id="regPosition" required placeholder="Cth: Jurutera Mekanikal / Cawangan Mekanikal" class="w-full px-3.5 py-2 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+        </div>
+        <button type="submit" id="registerBtn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-xl transition text-sm shadow mt-2">
+          Daftar Akaun
+        </button>
+      </form>
+
+      <div id="authStatus" class="hidden text-center text-xs text-blue-600 font-medium mt-3 animate-pulse">
+        Menyemak maklumat...
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const SUPABASE_URL = "https://anjcoojuerbekgassrrf.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFuamNvb2p1ZXJiZWtnYXNzcnJmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA0Mjg2NTEsImV4cCI6MjEwNjAwNDY1MX0.L_X-J-dtUW9z2F0DPoWgwh5h57C0H9jFYuloIYY8BuQ";
+
+    let supabaseClient = null;
+    function getSupabase() {
+      if (!supabaseClient) {
+        if (!window.supabase) throw new Error("Library Supabase belum sedia.");
+        supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+      }
+      return supabaseClient;
+    }
+
+    function switchTab(tab) {
+      const loginForm = document.getElementById('loginForm');
+      const registerForm = document.getElementById('registerForm');
+      const tabLogin = document.getElementById('tabLogin');
+      const tabRegister = document.getElementById('tabRegister');
+
+      if (tab === 'login') {
+        loginForm.classList.remove('hidden');
+        registerForm.classList.add('hidden');
+        tabLogin.className = "flex-1 py-3 text-center border-b-2 border-blue-600 text-blue-600 bg-white";
+        tabRegister.className = "flex-1 py-3 text-center border-b-2 border-transparent text-slate-500 hover:text-slate-800";
+      } else {
+        loginForm.classList.add('hidden');
+        registerForm.classList.remove('hidden');
+        tabRegister.className = "flex-1 py-3 text-center border-b-2 border-blue-600 text-blue-600 bg-white";
+        tabLogin.className = "flex-1 py-3 text-center border-b-2 border-transparent text-slate-500 hover:text-slate-800";
+      }
+    }
+
+    // Fungsi Log Masuk
+    async function handleLogin(e) {
+      e.preventDefault();
+      const ic = document.getElementById('loginIc').value.trim();
+      const phone = document.getElementById('loginPhone').value.trim();
+      const statusEl = document.getElementById('authStatus');
+
+      try {
+        statusEl.innerText = "Mengesahkan ID pengguna...";
+        statusEl.classList.remove('hidden');
+
+        const client = getSupabase();
+        const { data, error } = await client
+          .from('users')
+          .select('*')
+          .eq('ic_number', ic)
+          .eq('phone_number', phone)
+          .single();
+
+        if (error || !data) {
+          alert("Maklumat tidak dijumpai. Sila pastikan No. IC dan No. Telefon betul, atau daftar akaun dahulu.");
+          return;
+        }
+
+        // Simpan sesi log masuk dalam localStorage pelayar
+        localStorage.setItem('currentUser', JSON.stringify(data));
+        alert(`Selamat kembali, ${data.full_name}!`);
+        window.location.href = "index.html";
+      } catch (err) {
+        alert("Ralat semasa log masuk: " + (err.message || err));
+      } finally {
+        statusEl.classList.add('hidden');
+      }
+    }
+
+    // Fungsi Daftar Akaun
+    async function handleRegister(e) {
+      e.preventDefault();
+      const name = document.getElementById('regName').value.trim();
+      const ic = document.getElementById('regIc').value.trim();
+      const phone = document.getElementById('regPhone').value.trim();
+      const pos = document.getElementById('regPosition').value.trim();
+      const statusEl = document.getElementById('authStatus');
+
+      try {
+        statusEl.innerText = "Mendaftarkan akaun baharu...";
+        statusEl.classList.remove('hidden');
+
+        const client = getSupabase();
+        
+        // Semak jika IC sudah wujud
+        const { data: existingUser } = await client.from('users').select('id').eq('ic_number', ic).maybeSingle();
+        if (existingUser) {
+          alert("No. IC ini telah didaftarkan sebelum ini. Sila terus ke tab Log Masuk.");
+          switchTab('login');
+          return;
+        }
+
+        const { data, error } = await client.from('users').insert([{
+          full_name: name,
+          ic_number: ic,
+          phone_number: phone,
+          position: pos,
+          role: 'user' // Default sebagai user biasa
+        }]).select().single();
+
+        if (error) throw error;
+
+        // Auto login selepas daftar
+        localStorage.setItem('currentUser', JSON.stringify(data));
+        alert("Pendaftaran berjaya! Anda kini boleh memulakan pinjaman buku.");
+        window.location.href = "index.html";
+      } catch (err) {
+        alert("Ralat pendaftaran: " + (err.message || err));
+      } finally {
+        statusEl.classList.add('hidden');
+      }
+    }
+  </script>
+</body>
+</html>

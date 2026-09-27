@@ -12,26 +12,47 @@
 
   <!-- Header Navigasi -->
   <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
-    <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+    <div class="max-w-7xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-3">
       <div class="flex items-center space-x-3">
         <div class="bg-blue-600 text-white p-2 rounded-xl shadow-md">
           <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
         </div>
         <div>
           <h1 class="text-xl font-bold text-slate-900 leading-tight">Pusat Sumber</h1>
-          <p class="text-xs text-slate-500">Katalog Digital & Pengurusan Buku</p>
+          <p class="text-xs text-slate-500" id="userGreeting">Memuatkan sesi pengguna...</p>
         </div>
       </div>
-      <a href="register.html" class="inline-flex items-center space-x-1.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold px-4 py-2 rounded-xl transition shadow">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
-        <span>Daftar Buku</span>
-      </a>
+
+      <!-- Butang Tindakan Mengikut Peranan -->
+      <div class="flex items-center space-x-2">
+        <!-- Butang untuk Admin Sahaja -->
+        <a id="adminLoansBtn" href="admin-loans.html" class="hidden items-center space-x-1.5 bg-amber-500 hover:bg-amber-600 text-white text-xs font-semibold px-3 py-2 rounded-xl transition shadow">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg>
+          <span>Kelulusan Pinjaman</span>
+        </a>
+
+        <a id="adminRegisterBtn" href="register.html" class="hidden items-center space-x-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold px-3 py-2 rounded-xl transition shadow">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+          <span>Daftar Buku</span>
+        </a>
+
+        <!-- Butang untuk User Melihat Rekod Pinjaman Sendiri -->
+        <button id="myLoansBtn" onclick="toggleMyLoansView()" class="hidden items-center space-x-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold px-3 py-2 rounded-xl transition">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+          <span id="myLoansBtnText">Buku Pinjaman Saya</span>
+        </button>
+
+        <!-- Butang Log Keluar -->
+        <button onclick="handleLogout()" class="p-2 text-slate-400 hover:text-red-600 rounded-xl hover:bg-red-50 transition" title="Log Keluar">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+        </button>
+      </div>
     </div>
   </header>
 
   <!-- Kawasan Carian & Tapis -->
   <main class="max-w-7xl mx-auto px-4 py-6 flex-1 w-full">
-    <div class="flex flex-col sm:flex-row gap-3 mb-6">
+    <div id="filterControls" class="flex flex-col sm:flex-row gap-3 mb-6">
       <div class="relative flex-1">
         <input type="text" id="searchInput" placeholder="Cari kod buku (cth: GP-001), tajuk, pengarang..." class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-sm">
         <svg class="w-5 h-5 text-slate-400 absolute left-3 top-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
@@ -43,14 +64,15 @@
       </select>
     </div>
 
-    <div id="loadingIndicator" class="flex flex-col items-center justify-center py-20 text-slate-400">
-      <svg class="animate-spin h-8 w-8 text-blue-600 mb-2" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path></svg>
-      <span class="text-sm">Memuatkan katalog buku...</span>
+    <!-- Tajuk Seksyen Pinjaman Saya (Jika aktif) -->
+    <div id="myLoansSectionTitle" class="hidden mb-4 flex items-center justify-between">
+      <h2 class="text-base font-bold text-slate-900">Senarai Buku Yang Sedang Anda Pinjam</h2>
+      <button onclick="toggleMyLoansView()" class="text-xs text-blue-600 hover:underline">Kembali ke Katalog Utama</button>
     </div>
 
-    <div id="errorMessage" class="hidden text-center py-10 px-4 bg-red-50 rounded-xl border border-red-200 mb-6">
-      <p class="text-red-700 text-sm font-semibold mb-2" id="errorText"></p>
-      <button onclick="location.reload()" class="px-4 py-1.5 bg-red-600 text-white rounded-lg text-xs font-semibold hover:bg-red-700">Cuba Semula</button>
+    <div id="loadingIndicator" class="flex flex-col items-center justify-center py-20 text-slate-400">
+      <svg class="animate-spin h-8 w-8 text-blue-600 mb-2" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path></svg>
+      <span class="text-sm">Memuatkan senarai buku...</span>
     </div>
 
     <!-- Grid Katalog Buku -->
@@ -65,15 +87,11 @@
   <div id="bookModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm hidden">
     <div class="bg-white w-full max-w-2xl rounded-2xl overflow-hidden shadow-2xl flex flex-col md:flex-row max-h-[90vh]">
       
-      <!-- Paparan Gambar Besar -->
       <div class="md:w-1/2 bg-slate-900 flex items-center justify-center p-4 relative">
         <img id="modalImg" src="" alt="Kulit Buku" class="max-h-72 md:max-h-96 w-auto object-contain rounded-lg shadow-lg">
       </div>
 
-      <!-- Paparan Maklumat & Tindakan -->
       <div class="md:w-1/2 p-6 flex flex-col justify-between overflow-y-auto">
-        
-        <!-- Mode View Biasa -->
         <div id="viewMode">
           <div class="flex justify-between items-start mb-2">
             <div class="flex items-center space-x-2">
@@ -97,13 +115,14 @@
               <span>Buka / Baca E-Book di Drive</span>
             </a>
 
-            <button id="modalBorrowBtn" onclick="handleBorrowBook()" class="w-full bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold py-2.5 rounded-xl transition">
-              Pinjam Buku Ini
+            <!-- Butang Pinjam (Hantar Permohonan) -->
+            <button id="modalBorrowBtn" onclick="handleRequestBorrow()" class="w-full bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold py-2.5 rounded-xl transition">
+              Mohon Pinjam Buku Ini
             </button>
           </div>
 
-          <!-- Butang Edit & Padam -->
-          <div class="mt-4 pt-4 border-t border-slate-100 flex items-center justify-between">
+          <!-- Butang Edit & Padam (KHAS ADMIN SAHAJA) -->
+          <div id="adminActionSection" class="hidden mt-4 pt-4 border-t border-slate-100 flex items-center justify-between">
             <button onclick="enterEditMode()" class="inline-flex items-center space-x-1 text-xs font-semibold text-slate-700 hover:text-blue-600 bg-slate-100 hover:bg-blue-50 px-3 py-2 rounded-lg transition">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
               <span>Edit Buku</span>
@@ -115,7 +134,7 @@
           </div>
         </div>
 
-        <!-- Mode Edit Form -->
+        <!-- Mode Edit Form (Admin Sahaja) -->
         <div id="editMode" class="hidden">
           <div class="flex justify-between items-center mb-3">
             <h3 class="font-bold text-slate-900 text-sm">Kemaskini Butiran Buku</h3>
@@ -160,6 +179,13 @@
     let supabaseClient = null;
     let allBooks = [];
     let selectedBook = null;
+    let isShowingMyLoans = false;
+
+    // Semak Log Masuk Pengguna
+    const currentUser = JSON.parse(localStorage.getItem('currentUser') || 'null');
+    if (!currentUser) {
+      window.location.href = "login.html";
+    }
 
     function getSupabase() {
       if (!supabaseClient) {
@@ -167,6 +193,28 @@
         supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
       }
       return supabaseClient;
+    }
+
+    function setupRoleUI() {
+      const greeting = document.getElementById('userGreeting');
+      greeting.innerText = `${currentUser.full_name} (${currentUser.role === 'admin' ? 'Admin' : currentUser.position})`;
+
+      if (currentUser.role === 'admin') {
+        document.getElementById('adminLoansBtn').classList.remove('hidden');
+        document.getElementById('adminLoansBtn').classList.add('inline-flex');
+        document.getElementById('adminRegisterBtn').classList.remove('hidden');
+        document.getElementById('adminRegisterBtn').classList.add('inline-flex');
+      } else {
+        document.getElementById('myLoansBtn').classList.remove('hidden');
+        document.getElementById('myLoansBtn').classList.add('inline-flex');
+      }
+    }
+
+    function handleLogout() {
+      if (confirm("Adakah anda ingin log keluar?")) {
+        localStorage.removeItem('currentUser');
+        window.location.href = "login.html";
+      }
     }
 
     async function fetchBooks() {
@@ -182,17 +230,13 @@
 
     async function loadCatalog() {
       const loadingEl = document.getElementById('loadingIndicator');
-      const errorEl = document.getElementById('errorMessage');
-      const errorText = document.getElementById('errorText');
-
       try {
         allBooks = await fetchBooks();
         loadingEl.classList.add('hidden');
         renderBooks(allBooks);
       } catch (err) {
         loadingEl.classList.add('hidden');
-        errorText.innerText = "Gagal memuatkan rekod buku: " + (err.message || err);
-        errorEl.classList.remove('hidden');
+        alert("Gagal memuatkan rekod buku: " + (err.message || err));
       }
     }
 
@@ -215,7 +259,16 @@
         card.className = "bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden flex flex-col cursor-pointer hover:shadow-md transition hover:-translate-y-0.5";
         card.onclick = () => openModal(book);
 
-        const statusColor = book.status === 'Available' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700';
+        let statusColor = 'bg-green-100 text-green-700';
+        let statusLabel = 'Tersedia';
+        if (book.status === 'Borrowed') {
+          statusColor = 'bg-amber-100 text-amber-700';
+          statusLabel = 'Dipinjam';
+        } else if (book.status === 'Pending') {
+          statusColor = 'bg-blue-100 text-blue-700';
+          statusLabel = 'Menunggu Kelulusan';
+        }
+
         const typeBadge = book.is_ebook ? '<span class="bg-purple-100 text-purple-700 text-[10px] font-bold px-1.5 py-0.5 rounded">E-BOOK</span>' : '<span class="bg-slate-100 text-slate-600 text-[10px] font-bold px-1.5 py-0.5 rounded">FIZIKAL</span>';
         const codeBadge = book.book_code ? `<span class="bg-blue-600/90 text-white text-[10px] font-mono font-bold px-2 py-0.5 rounded-full shadow-sm">${book.book_code}</span>` : '';
 
@@ -231,7 +284,7 @@
               <p class="text-xs text-slate-500 mt-1 truncate">${book.author || 'Penulis Tidak Dinyatakan'}</p>
             </div>
             <div class="mt-3 flex items-center justify-between text-xs">
-              <span class="px-2 py-0.5 rounded-full font-medium text-[11px] ${statusColor}">${book.status === 'Available' ? 'Tersedia' : 'Dipinjam'}</span>
+              <span class="px-2 py-0.5 rounded-full font-medium text-[11px] ${statusColor}">${statusLabel}</span>
             </div>
           </div>
         `;
@@ -247,8 +300,18 @@
       document.getElementById('modalTitle').innerText = book.title;
       document.getElementById('modalAuthor').innerText = "Penulis: " + (book.author || "-");
       document.getElementById('modalCategory').innerText = book.category || "Umum";
-      document.getElementById('modalStatus').innerText = book.status === 'Available' ? 'Tersedia' : 'Sedang Dipinjam';
-      document.getElementById('modalStatus').className = book.status === 'Available' ? 'text-green-600 font-semibold' : 'text-amber-600 font-semibold';
+
+      let statusText = 'Tersedia di Rak';
+      let statusClass = 'text-green-600 font-semibold';
+      if (book.status === 'Borrowed') {
+        statusText = 'Sedang Dipinjam';
+        statusClass = 'text-amber-600 font-semibold';
+      } else if (book.status === 'Pending') {
+        statusText = 'Menunggu Kelulusan Admin';
+        statusClass = 'text-blue-600 font-semibold';
+      }
+      document.getElementById('modalStatus').innerText = statusText;
+      document.getElementById('modalStatus').className = statusClass;
       document.getElementById('modalImg').src = book.cover_url || "https://placehold.co/400x600?text=Tiada+Gambar";
 
       const badge = document.getElementById('modalBadge');
@@ -262,20 +325,35 @@
           driveBtn.href = book.ebook_drive_url;
           driveBtn.classList.remove('hidden');
           driveBtn.classList.add('flex');
-        } else {
-          driveBtn.classList.add('hidden');
         }
-        borrowBtn.innerText = "Tanda Telah Dibaca";
+        borrowBtn.classList.add('hidden');
       } else {
         badge.className = "text-xs px-2.5 py-1 rounded-full font-medium bg-slate-100 text-slate-700";
         badge.innerText = "Buku Fizikal";
         driveBtn.classList.add('hidden');
-        driveBtn.classList.remove('flex');
-        borrowBtn.innerText = book.status === 'Available' ? "Mohon Pinjam Buku" : "Buku Sedang Dipinjam";
-        borrowBtn.disabled = book.status !== 'Available';
-        borrowBtn.className = book.status === 'Available' 
-          ? "w-full bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold py-2.5 rounded-xl transition"
-          : "w-full bg-slate-300 text-slate-500 text-sm font-semibold py-2.5 rounded-xl cursor-not-allowed";
+        borrowBtn.classList.remove('hidden');
+
+        if (book.status === 'Available') {
+          borrowBtn.disabled = false;
+          borrowBtn.innerText = "Mohon Pinjam Buku Ini";
+          borrowBtn.className = "w-full bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold py-2.5 rounded-xl transition";
+        } else if (book.status === 'Pending') {
+          borrowBtn.disabled = true;
+          borrowBtn.innerText = "Permohonan Sedang Diproses Admin";
+          borrowBtn.className = "w-full bg-amber-100 text-amber-700 text-sm font-semibold py-2.5 rounded-xl cursor-not-allowed";
+        } else {
+          borrowBtn.disabled = true;
+          borrowBtn.innerText = "Buku Sedang Dipinjam";
+          borrowBtn.className = "w-full bg-slate-200 text-slate-500 text-sm font-semibold py-2.5 rounded-xl cursor-not-allowed";
+        }
+      }
+
+      // Tunjuk butang Edit/Delete hanya jika pengguna adalah Admin
+      const adminSection = document.getElementById('adminActionSection');
+      if (currentUser.role === 'admin') {
+        adminSection.classList.remove('hidden');
+      } else {
+        adminSection.classList.add('hidden');
       }
 
       document.getElementById('bookModal').classList.remove('hidden');
@@ -287,11 +365,75 @@
       exitEditMode();
     }
 
-    function enterEditMode() {
+    // Hantar Permohonan Pinjaman
+    async function handleRequestBorrow() {
       if (!selectedBook) return;
+      if (!confirm(`Sahkan permohonan pinjaman bagi buku: "${selectedBook.title}"? Permohonan akan dihantar kepada admin untuk kelulusan.`)) return;
+
+      try {
+        const client = getSupabase();
+
+        // 1. Cipta rekod pinjaman dalam jadual loans
+        const { error: loanError } = await client.from('loans').insert([{
+          book_id: selectedBook.id,
+          user_id: currentUser.id,
+          status: 'Pending'
+        }]);
+        if (loanError) throw loanError;
+
+        // 2. Kemas kini status buku kepada 'Pending'
+        await client.from('books').update({ status: 'Pending' }).eq('id', selectedBook.id);
+
+        alert("Permohonan pinjaman berjaya dihantar! Sila tunggu admin meluluskan permohonan anda.");
+        closeModal();
+        loadCatalog();
+      } catch (err) {
+        alert("Ralat semasa memohon pinjaman: " + (err.message || err));
+      }
+    }
+
+    // Paparan Buku Pinjaman Saya (Untuk User)
+    async function toggleMyLoansView() {
+      const grid = document.getElementById('booksGrid');
+      const filterControls = document.getElementById('filterControls');
+      const myLoansTitle = document.getElementById('myLoansSectionTitle');
+      const btnText = document.getElementById('myLoansBtnText');
+
+      if (!isShowingMyLoans) {
+        isShowingMyLoans = true;
+        btnText.innerText = "Katalog Utama";
+        filterControls.classList.add('hidden');
+        myLoansTitle.classList.remove('hidden');
+
+        try {
+          const client = getSupabase();
+          // Ambil buku yang berstatus Approved yang dipinjam oleh user semasa
+          const { data, error } = await client
+            .from('loans')
+            .select('books (*)')
+            .eq('user_id', currentUser.id)
+            .eq('status', 'Approved');
+
+          if (error) throw error;
+          const myBorrowedBooks = (data || []).map(d => d.books).filter(Boolean);
+          renderBooks(myBorrowedBooks);
+        } catch (e) {
+          alert("Ralat memuatkan rekod pinjaman anda: " + e.message);
+        }
+      } else {
+        isShowingMyLoans = false;
+        btnText.innerText = "Buku Pinjaman Saya";
+        filterControls.classList.remove('hidden');
+        myLoansTitle.classList.add('hidden');
+        renderBooks(allBooks);
+      }
+    }
+
+    // Fungsi Admin (Edit & Delete)
+    function enterEditMode() {
+      if (currentUser.role !== 'admin') return;
       document.getElementById('viewMode').classList.add('hidden');
       document.getElementById('editMode').classList.remove('hidden');
-
       document.getElementById('editBookCode').value = selectedBook.book_code || '';
       document.getElementById('editBookTitle').value = selectedBook.title || '';
       document.getElementById('editBookAuthor').value = selectedBook.author || '';
@@ -301,32 +443,25 @@
     function exitEditMode() {
       document.getElementById('editMode').classList.add('hidden');
       document.getElementById('viewMode').classList.remove('hidden');
-      document.getElementById('editNewCover').value = '';
     }
 
-    // Padam Buku
     async function handleDeleteBook() {
-      if (!selectedBook) return;
-      const confirmDelete = confirm(`Adakah anda pasti mahu memadam buku "${selectedBook.title}" (${selectedBook.book_code || ''}) secara kekal?`);
-      if (!confirmDelete) return;
-
+      if (currentUser.role !== 'admin') return;
+      if (!confirm(`Adakah anda pasti mahu memadam buku "${selectedBook.title}" secara kekal?`)) return;
       try {
         const client = getSupabase();
-        const { error } = await client.from("books").delete().eq("id", selectedBook.id);
-        if (error) throw error;
-
+        await client.from("books").delete().eq("id", selectedBook.id);
         alert("Buku berjaya dipadam!");
         closeModal();
         loadCatalog();
       } catch (err) {
-        alert("Ralat semasa memadam buku: " + (err.message || err));
+        alert("Ralat: " + err.message);
       }
     }
 
-    // Simpan Kemaskini Edit Buku
     async function handleSaveEdit(e) {
       e.preventDefault();
-      if (!selectedBook) return;
+      if (currentUser.role !== 'admin') return;
 
       const saveBtn = document.getElementById('saveEditBtn');
       const updatedCode = document.getElementById('editBookCode').value.trim();
@@ -343,17 +478,13 @@
         if (newCoverFile) {
           const client = getSupabase();
           const fileName = `cover_${Date.now()}_${Math.random().toString(36).substring(2, 7)}.jpg`;
-          const { error: uploadError } = await client.storage
-            .from("book-covers")
-            .upload(fileName, newCoverFile, { contentType: "image/jpeg", upsert: false });
-
-          if (uploadError) throw uploadError;
+          await client.storage.from("book-covers").upload(fileName, newCoverFile, { contentType: "image/jpeg" });
           const { data } = client.storage.from("book-covers").getPublicUrl(fileName);
           newCoverUrl = data.publicUrl;
         }
 
         const client = getSupabase();
-        const { error } = await client.from("books").update({
+        await client.from("books").update({
           book_code: updatedCode,
           title: updatedTitle,
           author: updatedAuthor || null,
@@ -362,35 +493,18 @@
           cover_url: newCoverUrl
         }).eq("id", selectedBook.id);
 
-        if (error) throw error;
-
         alert("Butiran buku berjaya dikemaskini!");
         closeModal();
         loadCatalog();
       } catch (err) {
-        alert("Ralat mengemaskini buku: " + (err.message || err));
+        alert("Ralat: " + err.message);
       } finally {
         saveBtn.disabled = false;
         saveBtn.innerText = "Simpan Perubahan";
       }
     }
 
-    async function handleBorrowBook() {
-      if (!selectedBook) return;
-      if (!confirm(`Sahkan untuk mengubah status pinjaman bagi: "${selectedBook.title}"?`)) return;
-
-      try {
-        const nextStatus = selectedBook.status === 'Available' ? 'Borrowed' : 'Available';
-        const client = getSupabase();
-        await client.from("books").update({ status: nextStatus }).eq("id", selectedBook.id);
-        alert("Status buku berjaya dikemas kini!");
-        closeModal();
-        loadCatalog();
-      } catch (err) {
-        alert("Ralat semasa mengemas kini status: " + err.message);
-      }
-    }
-
+    // Filter & Carian
     document.getElementById('searchInput').addEventListener('input', applyFilters);
     document.getElementById('filterType').addEventListener('change', applyFilters);
 
@@ -401,8 +515,7 @@
       const filtered = allBooks.filter(book => {
         const matchQuery = (book.title && book.title.toLowerCase().includes(query)) ||
                            (book.book_code && book.book_code.toLowerCase().includes(query)) ||
-                           (book.author && book.author.toLowerCase().includes(query)) ||
-                           (book.category && book.category.toLowerCase().includes(query));
+                           (book.author && book.author.toLowerCase().includes(query));
         
         let matchType = true;
         if (type === 'physical') matchType = !book.is_ebook;
@@ -415,6 +528,7 @@
     }
 
     window.addEventListener('DOMContentLoaded', () => {
+      setupRoleUI();
       setTimeout(loadCatalog, 300);
     });
   </script>
