@@ -64,12 +64,19 @@
         <div>
           <label for="bookCategory" class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Kategori *</label>
           <select id="bookCategory" onchange="generateNextBookCode()" class="w-full px-3 py-2.5 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
-            <option value="Garis Panduan" data-prefix="GP">Garis Panduan (GP)</option>
-            <option value="Jurnal" data-prefix="J">Jurnal (J)</option>
-            <option value="Manual & Standard" data-prefix="MS">Manual & Standard (MS)</option>
-            <option value="Buku Teknikal" data-prefix="BT">Buku Teknikal (BT)</option>
-            <option value="Laporan Projek" data-prefix="LP">Laporan Projek (LP)</option>
-            <option value="Umum" data-prefix="U">Umum (U)</option>
+            <option value="Akta, Dasar & Polisi" data-prefix="ACT-G">Akta, Dasar & Polisi (ACT-G)</option>
+            <option value="Buletin" data-prefix="BTN-G">Buletin (BTN-G)</option>
+            <option value="Coffee Book Table" data-prefix="CB-G">Coffee Book Table (CB-G)</option>
+            <option value="Garis Panduan" data-prefix="GP-G">Garis Panduan (GP-G)</option>
+            <option value="Jurnal" data-prefix="J-G">Jurnal (J-G)</option>
+            <option value="Laporan Tahunan" data-prefix="LT-G">Laporan Tahunan (LT-G)</option>
+            <option value="Manual" data-prefix="MAN-G">Manual (MAN-G)</option>
+            <option value="Nota Rujukan" data-prefix="N-G">Nota Rujukan (N-G)</option>
+            <option value="Pentadbiran" data-prefix="P-G">Pentadbiran (P-G)</option>
+            <option value="Spesifikasi" data-prefix="SPK-G">Spesifikasi (SPK-G)</option>
+            <option value="Standard" data-prefix="STD-G">Standard (STD-G)</option>
+            <option value="Laporan Teknikal" data-prefix="TEK-G">Laporan Teknikal (TEK-G)</option>
+            <option value="Umum" data-prefix="U-G">Umum (U-G)</option>
           </select>
         </div>
 
@@ -132,9 +139,9 @@
         const client = getSupabase();
         const selectEl = document.getElementById('bookCategory');
         const selectedOpt = selectEl.options[selectEl.selectedIndex];
-        const prefix = selectedOpt.getAttribute('data-prefix') || 'B';
+        const prefix = selectedOpt.getAttribute('data-prefix') || 'U-G';
 
-        // Ambil semua buku yang bermula dengan prefix ini
+        // Cari rekod buku yang bermula dengan format prefix berkenaan (cth: ACT-G-%)
         const { data, error } = await client
           .from("books")
           .select("book_code")
@@ -143,8 +150,10 @@
         let nextNum = 1;
         if (data && data.length > 0) {
           const numbers = data.map(item => {
-            const parts = (item.book_code || "").split('-');
-            const val = parseInt(parts[1], 10);
+            const code = item.book_code || "";
+            // Ambil nombor di bahagian belakang selepas tanda '-' terakhir
+            const parts = code.split('-');
+            const val = parseInt(parts[parts.length - 1], 10);
             return isNaN(val) ? 0 : val;
           });
           nextNum = Math.max(...numbers) + 1;
