@@ -29,6 +29,13 @@
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg>
           <span>Kelulusan Pinjaman</span>
         </a>
+
+        <!-- Butang Eksport Data (Admin Sahaja) -->
+        <button id="adminExportBtn" onclick="openExportModal()" class="hidden items-center space-x-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold px-3 py-2 rounded-xl transition shadow">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+          <span>Eksport Data</span>
+        </button>
+
         <!-- Butang Urus Pengguna (Admin Sahaja) -->
         <a id="adminUsersBtn" href="admin-users.html" class="hidden items-center space-x-1.5 bg-slate-700 hover:bg-slate-800 text-white text-xs font-semibold px-3 py-2 rounded-xl transition shadow">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
@@ -61,12 +68,11 @@
         <input type="text" id="searchInput" placeholder="Cari kod buku (cth: GP-001), tajuk, pengarang..." class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-sm">
         <svg class="w-5 h-5 text-slate-400 absolute left-3 top-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
       </div>
-      <select id="filterType" class="px-3 py-2.5 rounded-xl border border-slate-300 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+      <select id="filterType" onchange="applyFilters()" class="px-3 py-2.5 rounded-xl border border-slate-300 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
         <option value="all">Semua Format</option>
         <option value="physical">Buku Fizikal</option>
         <option value="ebook">E-Book (Digital)</option>
       </select>
-      <!-- Dropdown Filter Kategori Tambahan -->
       <select id="filterCategory" onchange="applyFilters()" class="px-3 py-2.5 rounded-xl border border-slate-300 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
         <option value="all">Semua Kategori</option>
         <option value="Akta, Dasar & Polisi">Akta, Dasar & Polisi</option>
@@ -108,6 +114,57 @@
       <p class="text-slate-500 text-sm">Tiada buku ditemui dalam rekod.</p>
     </div>
   </main>
+
+  <!-- Modal Eksport Data (Admin) -->
+  <div id="exportModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm hidden">
+    <div class="bg-white w-full max-w-md rounded-2xl shadow-2xl p-6 relative">
+      <div class="flex justify-between items-center mb-4 pb-2 border-b border-slate-100">
+        <h3 class="font-bold text-slate-900 text-base flex items-center space-x-2">
+          <svg class="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+          <span>Eksport Laporan (CSV / Excel)</span>
+        </h3>
+        <button onclick="closeExportModal()" class="text-slate-400 hover:text-slate-600">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+        </button>
+      </div>
+
+      <div class="space-y-4">
+        <!-- 1. Pilihan Eksport Buku Mengikut Kategori -->
+        <div class="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
+          <h4 class="font-bold text-slate-800 text-xs uppercase tracking-wider">1. Eksport Senarai Buku</h4>
+          <label class="block text-xs text-slate-600">Pilih Kategori:</label>
+          <select id="exportCategorySelect" class="w-full px-3 py-2 rounded-lg border border-slate-300 text-xs bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+            <option value="all">Semua Kategori (Keseluruhan Buku)</option>
+            <option value="Akta, Dasar & Polisi">Akta, Dasar & Polisi</option>
+            <option value="Buletin">Buletin</option>
+            <option value="Coffee Book Table">Coffee Book Table</option>
+            <option value="Garis Panduan">Garis Panduan</option>
+            <option value="Jurnal">Jurnal</option>
+            <option value="Laporan Tahunan">Laporan Tahunan</option>
+            <option value="Manual">Manual</option>
+            <option value="Nota Rujukan">Nota Rujukan</option>
+            <option value="Pentadbiran">Pentadbiran</option>
+            <option value="Spesifikasi">Spesifikasi</option>
+            <option value="Standard">Standard</option>
+            <option value="Laporan Teknikal">Laporan Teknikal</option>
+            <option value="Umum">Umum</option>
+          </select>
+          <button onclick="exportBooksToCSV()" class="w-full mt-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2 rounded-lg text-xs transition shadow-sm">
+            Muat Turun Senarai Buku (.CSV)
+          </button>
+        </div>
+
+        <!-- 2. Pilihan Eksport Rekod Pinjaman -->
+        <div class="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
+          <h4 class="font-bold text-slate-800 text-xs uppercase tracking-wider">2. Eksport Rekod Pinjaman Peminjam</h4>
+          <p class="text-xs text-slate-500 leading-relaxed">Muat turun semua rekod transaksi pinjaman berserta maklumat peminjam (Nama, No. IC, Telefon, Jawatan).</p>
+          <button onclick="exportLoansToCSV()" class="w-full mt-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded-lg text-xs transition shadow-sm">
+            Muat Turun Rekod Pinjaman (.CSV)
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <!-- Modal Pratonton / Edit / Padam Buku -->
   <div id="bookModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm hidden">
@@ -228,19 +285,26 @@
       if (currentUser.role === 'admin') {
         document.getElementById('adminLoansBtn').classList.remove('hidden');
         document.getElementById('adminLoansBtn').classList.add('inline-flex');
+        
+        const exportBtn = document.getElementById('adminExportBtn');
+        if (exportBtn) {
+          exportBtn.classList.remove('hidden');
+          exportBtn.classList.add('inline-flex');
+        }
+
+        const usersBtn = document.getElementById('adminUsersBtn');
+        if (usersBtn) {
+          usersBtn.classList.remove('hidden');
+          usersBtn.classList.add('inline-flex');
+        }
+
         document.getElementById('adminRegisterBtn').classList.remove('hidden');
         document.getElementById('adminRegisterBtn').classList.add('inline-flex');
       } else {
         document.getElementById('myLoansBtn').classList.remove('hidden');
         document.getElementById('myLoansBtn').classList.add('inline-flex');
       }
-      const usersBtn = document.getElementById('adminUsersBtn');
-        if (usersBtn) {
-          usersBtn.classList.remove('hidden');
-          usersBtn.classList.add('inline-flex');
-        }
-      }
-    
+    }
 
     function handleLogout() {
       if (confirm("Adakah anda ingin log keluar?")) {
@@ -251,7 +315,6 @@
 
     async function fetchBooks() {
       const client = getSupabase();
-      // Tambahkan .range(0, 4999) supaya menarik sehingga 5,000 rekod buku
       const { data, error } = await client
         .from("books")
         .select("*")
@@ -274,15 +337,11 @@
       }
     }
 
-  function renderBooks(books) {
+    function renderBooks(books) {
       const grid = document.getElementById('booksGrid');
       const emptyState = document.getElementById('emptyState');
       grid.innerHTML = '';
 
-      // 1. Paparkan jumlah buku di Console pelayar untuk semakan (F12 di PC)
-      console.log("Jumlah buku berjaya ditarik:", books.length);
-
-      // 2. Kemas kini teks penunjuk jumlah buku pada antaramuka (UI)
       const countEl = document.getElementById('totalBooksCount');
       if (countEl) {
         countEl.innerText = `Menunjukkan ${books.length} buah buku`;
@@ -391,7 +450,6 @@
         }
       }
 
-      // Tunjuk butang Edit/Delete hanya jika pengguna adalah Admin
       const adminSection = document.getElementById('adminActionSection');
       if (currentUser.role === 'admin') {
         adminSection.classList.remove('hidden');
@@ -408,15 +466,12 @@
       exitEditMode();
     }
 
-    // Hantar Permohonan Pinjaman
     async function handleRequestBorrow() {
       if (!selectedBook) return;
       if (!confirm(`Sahkan permohonan pinjaman bagi buku: "${selectedBook.title}"? Permohonan akan dihantar kepada admin untuk kelulusan.`)) return;
 
       try {
         const client = getSupabase();
-
-        // 1. Cipta rekod pinjaman dalam jadual loans
         const { error: loanError } = await client.from('loans').insert([{
           book_id: selectedBook.id,
           user_id: currentUser.id,
@@ -424,7 +479,6 @@
         }]);
         if (loanError) throw loanError;
 
-        // 2. Kemas kini status buku kepada 'Pending'
         await client.from('books').update({ status: 'Pending' }).eq('id', selectedBook.id);
 
         alert("Permohonan pinjaman berjaya dihantar! Sila tunggu admin meluluskan permohonan anda.");
@@ -435,7 +489,6 @@
       }
     }
 
-    // Paparan Buku Pinjaman Saya (Untuk User)
     async function toggleMyLoansView() {
       const grid = document.getElementById('booksGrid');
       const filterControls = document.getElementById('filterControls');
@@ -450,7 +503,6 @@
 
         try {
           const client = getSupabase();
-          // Ambil buku yang berstatus Approved yang dipinjam oleh user semasa
           const { data, error } = await client
             .from('loans')
             .select('books (*)')
@@ -472,7 +524,6 @@
       }
     }
 
-    // Fungsi Admin (Edit & Delete)
     function enterEditMode() {
       if (currentUser.role !== 'admin') return;
       document.getElementById('viewMode').classList.add('hidden');
@@ -544,6 +595,109 @@
       } finally {
         saveBtn.disabled = false;
         saveBtn.innerText = "Simpan Perubahan";
+      }
+    }
+
+    // Modal Eksport & Logik Muat Turun CSV
+    function openExportModal() {
+      document.getElementById('exportModal').classList.remove('hidden');
+    }
+
+    function closeExportModal() {
+      document.getElementById('exportModal').classList.add('hidden');
+    }
+
+    function downloadCSV(csvContent, fileName) {
+      const blob = new Blob(["\uFEFF" + csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.setAttribute("href", url);
+      link.setAttribute("download", fileName);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    }
+
+    function exportBooksToCSV() {
+      const selectedCategory = document.getElementById('exportCategorySelect').value;
+      
+      let booksToExport = allBooks;
+      if (selectedCategory !== 'all') {
+        booksToExport = allBooks.filter(b => b.category === selectedCategory);
+      }
+
+      if (booksToExport.length === 0) {
+        alert("Tiada rekod buku bagi kategori ini.");
+        return;
+      }
+
+      const headers = ["Kod Buku", "Tajuk Buku", "Pengarang/Cawangan", "Kategori", "Format", "Status", "Pautan E-Book"];
+      const rows = booksToExport.map(b => [
+        `"${(b.book_code || '').replace(/"/g, '""')}"`,
+        `"${(b.title || '').replace(/"/g, '""')}"`,
+        `"${(b.author || '-').replace(/"/g, '""')}"`,
+        `"${(b.category || '-').replace(/"/g, '""')}"`,
+        `"${b.is_ebook ? 'E-Book' : 'Fizikal'}"`,
+        `"${b.status || 'Available'}"`,
+        `"${(b.ebook_drive_url || '').replace(/"/g, '""')}"`
+      ]);
+
+      const csvContent = [headers.join(','), ...rows.map(e => e.join(','))].join('\n');
+      const timeStamp = new Date().toISOString().slice(0, 10);
+      const catLabel = selectedCategory === 'all' ? 'SEMUA_KATEGORI' : selectedCategory.replace(/\s+/g, '_');
+      
+      downloadCSV(csvContent, `Senarai_Buku_${catLabel}_${timeStamp}.csv`);
+      closeExportModal();
+    }
+
+    async function exportLoansToCSV() {
+      try {
+        const client = getSupabase();
+        const { data, error } = await client
+          .from('loans')
+          .select(`
+            id,
+            status,
+            created_at,
+            users (full_name, ic_number, phone_number, position),
+            books (book_code, title, category)
+          `)
+          .order('created_at', { ascending: false });
+
+        if (error) throw error;
+        if (!data || data.length === 0) {
+          alert("Tiada rekod pinjaman ditemui dalam sistem.");
+          return;
+        }
+
+        const headers = ["ID Pinjaman", "Nama Peminjam", "No. Kad Pengenalan", "No. Telefon", "Jawatan/Bahagian", "Kod Buku", "Tajuk Buku", "Kategori", "Status Pinjaman", "Tarikh Mohon"];
+        const rows = data.map(item => {
+          const u = item.users || {};
+          const b = item.books || {};
+          const createdDate = item.created_at ? new Date(item.created_at).toLocaleDateString('ms-MY') : '-';
+
+          return [
+            `"${item.id}"`,
+            `"${(u.full_name || '-').replace(/"/g, '""')}"`,
+            `"'${(u.ic_number || '-').replace(/"/g, '""')}"`,
+            `"'${(u.phone_number || '-').replace(/"/g, '""')}"`,
+            `"${(u.position || '-').replace(/"/g, '""')}"`,
+            `"${(b.book_code || '-').replace(/"/g, '""')}"`,
+            `"${(b.title || '-').replace(/"/g, '""')}"`,
+            `"${(b.category || '-').replace(/"/g, '""')}"`,
+            `"${item.status || '-'}"`,
+            `"${createdDate}"`
+          ];
+        });
+
+        const csvContent = [headers.join(','), ...rows.map(e => e.join(','))].join('\n');
+        const timeStamp = new Date().toISOString().slice(0, 10);
+        
+        downloadCSV(csvContent, `Rekod_Pinjaman_Pusat_Sumber_${timeStamp}.csv`);
+        closeExportModal();
+      } catch (err) {
+        alert("Ralat semasa mengeksport rekod pinjaman: " + (err.message || err));
       }
     }
 
