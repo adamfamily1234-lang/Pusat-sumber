@@ -96,6 +96,11 @@
       <span class="text-sm">Memuatkan senarai buku...</span>
     </div>
 
+    <!-- Penunjuk Jumlah Buku -->
+    <div class="mb-3 flex justify-between items-center text-xs text-slate-500 font-medium px-1">
+      <span id="totalBooksCount">Memuatkan bilangan...</span>
+    </div>
+
     <!-- Grid Katalog Buku -->
     <div id="booksGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 hidden"></div>
 
@@ -269,10 +274,19 @@
       }
     }
 
-    function renderBooks(books) {
+  function renderBooks(books) {
       const grid = document.getElementById('booksGrid');
       const emptyState = document.getElementById('emptyState');
       grid.innerHTML = '';
+
+      // 1. Paparkan jumlah buku di Console pelayar untuk semakan (F12 di PC)
+      console.log("Jumlah buku berjaya ditarik:", books.length);
+
+      // 2. Kemas kini teks penunjuk jumlah buku pada antaramuka (UI)
+      const countEl = document.getElementById('totalBooksCount');
+      if (countEl) {
+        countEl.innerText = `Menunjukkan ${books.length} buah buku`;
+      }
 
       if (books.length === 0) {
         grid.classList.add('hidden');
