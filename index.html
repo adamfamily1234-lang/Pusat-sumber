@@ -246,10 +246,12 @@
 
     async function fetchBooks() {
       const client = getSupabase();
+      // Tambahkan .range(0, 4999) supaya menarik sehingga 5,000 rekod buku
       const { data, error } = await client
         .from("books")
         .select("*")
-        .order("created_at", { ascending: false });
+        .order("created_at", { ascending: false })
+        .range(0, 4999);
 
       if (error) throw error;
       return data || [];
